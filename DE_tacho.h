@@ -4,7 +4,7 @@
 
 class DE_tacho {
   public:
-    DE_tacho(int pin) : _pin(pin) {
+    DE_tacho(uint8_t pin) : _pin(pin) {
       pinMode(_pin, INPUT_PULLUP);
     }
 
