@@ -2,9 +2,9 @@
 
 #define VACUUM_CLEANER_MOTOR 504
 
-class tacho {
+class DE_tacho {
   public:
-    tacho(int pin) : _pin(pin) {
+    DE_tacho(int pin) : _pin(pin) {
       pinMode(_pin, INPUT_PULLUP);
     }
 
