@@ -8,8 +8,7 @@
 ### подключение и инициализация
 ```cpp
 #include <DE_tacho.h>
-
-DE_tacho(uint8_t pin);
+DE_tacho(uint8_t pin);            //пин энкодера
 ```
 
 ## использование
