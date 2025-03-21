@@ -1,5 +1,5 @@
-tacho.h	KEYWORD1
-tacho	KEYWORD1
+DE_tacho.h	KEYWORD1
+DE_tacho	KEYWORD1
 # enc	KEYWORD1
 
 begin	KEYWORD2
