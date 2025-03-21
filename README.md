@@ -32,12 +32,12 @@ DE_tacho enc(2);
 
 void setup() {
   Serial.begin(9600);
-  enc.begin(isr);
+  enc.begin(isr);                //вызываем функцию с обработчиком прерываний
   enc.setRatio(8 * 63);
 }
 
 void isr() {
-  enc.detect();
+  enc.detect();                  //обработчик прерываний
 }
 
 void loop() {
