@@ -1,61 +1,82 @@
 #pragma once
 
-#define VACUUM_CLEANER_MOTOR 504
+#include <EnableInterrupt.h>
 
 class DE_tacho {
   public:
-    DE_tacho(uint8_t pin) : _pin(pin) {
+    DE_tacho(uint8_t pin) : _pin(pin), _rot(0), _rpm(0), _radius(0.017f), _ratio(1),
+      _lastCalcMillis(0), _nullTimer(0) {
       pinMode(_pin, INPUT_PULLUP);
     }
 
     void begin(void (*isr)()) {
-      attachInterrupt(digitalPinToInterrupt(_pin), isr, RISING);
+      enableInterrupt(_pin, isr, RISING);
+      _lastCalcMillis = millis();
+      _nullTimer = _lastCalcMillis;
     }
+
 
     void detect() {
       _rot++;
-      _dt = millis() - _tm;
-      if (_dt >= 100) {
-        _rpm = (_rot * 60000 / _dt) / (_ratio);
-        _rot = 0;
-        _tm = millis();
-      }
       _nullTimer = millis();
     }
 
+    void tick() {
+      unsigned long now = millis();
+
+      if (now - _nullTimer >= 1000) {
+        _rpm = 0;
+        _rot = 0;
+      }
+
+      if (now - _lastCalcMillis >= 100) {
+        noInterrupts();
+        unsigned int pulses = _rot;
+        _rot = 0;
+        interrupts();
+
+        unsigned long dt = now - _lastCalcMillis;
+        if (dt > 0) {
+          // RPM = (импульсы / dt(ms)) * (60000 мс в минуте) / ratio
+          _rpm = (unsigned long)((pulses * 60000UL) / dt) / _ratio;
+        } else {
+          _rpm = 0;
+        }
+
+        _lastCalcMillis = now;
+      }
+    }
+
     uint16_t getRPM() {
-      return _rpm;
+      noInterrupts();
+      uint16_t rpmCopy = _rpm;
+      interrupts();
+      return rpmCopy;
     }
 
     void setRatio(uint16_t ratio) {
-      _ratio = ratio;
+      if (ratio > 0) {
+        _ratio = ratio;
+      }
     }
 
-    void setRadius(uint16_t radius) {
-      _radius = radius / 1000;
+    void setRadius(uint16_t radiusMm) {
+      _radius = radiusMm / 1000.0f;
     }
 
     float getSpeed() {
-      const float conversionFactor = 2 * 3.14159f / 60.0f;
-      _spd = _rpm * _radius * conversionFactor;
-      return _spd;
-    }
-
-
-    void tick() {
-      if (millis() - _nullTimer >= 100) {
-        _rpm = 0;
-      }
+      // Скорость (м/с) = RPM * радиус (м) * 2 * pi / 60
+      const float conversionFactor = 2.0f * 3.1415926f / 60.0f;
+      uint16_t rpmCopy = getRPM();
+      return rpmCopy * _radius * conversionFactor;
     }
 
   private:
     uint8_t _pin;
-    unsigned int _rot = 0;
-    unsigned long int _tm;
-    unsigned long int _rpm = 0;
-    float _spd;
-    unsigned int _dt = 0;
-    uint32_t _nullTimer;
-    uint16_t _ratio = 1;
-    float _radius = 0.017;
+    volatile unsigned int _rot;       // счётчик импульсов за период
+    volatile unsigned int _rpm;       // последнее посчитанное RPM
+    unsigned long _lastCalcMillis;    // время последнего расчёта
+    unsigned long _nullTimer;         // таймер сброса RPM если нет импульсов
+    uint16_t _ratio;
+    float _radius;
 };
