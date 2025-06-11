@@ -1,4 +1,3 @@
-DE_tacho.h	KEYWORD1
 DE_tacho	KEYWORD1
 # enc	KEYWORD1
 
@@ -9,5 +8,3 @@ setRatio	KEYWORD2
 setRadius	KEYWORD2
 getSpeed	KEYWORD2
 tick	KEYWORD2
-
-VACUUM_CLEANER_MOTOR	LITERAL1
